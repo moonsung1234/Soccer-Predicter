@@ -11,7 +11,6 @@ for ct in country :
     play_map[ct]["win"] = 0
     play_map[ct]["lose"] = 0
     play_map[ct]["draw"] = 0
-    play_map[ct]["score"] = 0
     play_map[ct]["country"] = []
 
 # input play info
@@ -47,101 +46,65 @@ if not str.strip(play_info) == "" :
 
 # input country that you want to know the rank
 target_country = str.strip(input("원하는 국가를 입력해주세요. : "))
+
+# make match list
+match = []
+
+for i, target_ct in enumerate(country) :
+    for ct in country[i + 1:] :
+        if not ct in play_map[target_ct]["country"] :
+            match.append([target_ct, ct])
+
+# get all match
 result = []
 
+def play(map, match_index) :
+    if match_index == len(match) :
+        result.append(map)
+
+        return
+    
+    # win
+    temp_map = copy.deepcopy(map)
+    temp_map[match[match_index][0]]["win"] += 1
+    temp_map[match[match_index][1]]["lose"] += 1
+
+    play(temp_map, match_index + 1)
+
+    # lose
+    temp_map = copy.deepcopy(map)
+    temp_map[match[match_index][0]]["lose"] += 1
+    temp_map[match[match_index][1]]["win"] += 1
+
+    play(temp_map, match_index + 1)
+
+    # draw
+    temp_map = copy.deepcopy(map)
+    temp_map[match[match_index][0]]["draw"] += 1
+    temp_map[match[match_index][1]]["draw"] += 1
+
+    play(temp_map, match_index + 1)
+
+play(play_map, 0)
+
+# get match we want
+final = []
+
 def print_map(map) :
-    string = ""
-    
+    temp_str = ""
+
     for ct in map.keys() :
-        string += "{0} win:{1} lose:{2} draw:{3} \n".format(ct, map[ct]["win"], map[ct]["lose"], map[ct]["draw"])
+        temp_str += f'{ct} win : {map[ct]["win"]} lose : {map[ct]["lose"]} draw : {map[ct]["draw"]} \n'
 
-    print(string)
+    print(temp_str)
 
-def compare(map1, map2) :
-    for ct in map1.keys() :
-        if map1[ct]["win"] != map2[ct]["win"] or map1[ct]["lose"] != map2[ct]["lose"] or map1[ct]["draw"] != map2[ct]["draw"] :
-            return False
+for result_map in result :
+    result_cts = sorted(result_map.keys(), key=lambda x : result_map[x]["win"] * 3 + result_map[x]["draw"], reverse=True)
 
-    return True
+    if result_cts[0] == target_country or result_cts[1] == target_country :
+        final.append(result_map)
 
-def save(map) :
-    for ct in map.keys() :
-        if len(map[ct]["country"]) != len(country) - 1 :
-            return
+        print_map(result_map)
 
-    for result_map in result :
-        if compare(map, result_map) :
-            return
-
-    result.append(map)
-
-def play(map, ct) :
-    for _ct in country :
-        if not _ct == ct and not _ct in map[ct]["country"] :
-            # win
-            temp_map = copy.deepcopy(map)
-            temp_map[ct]["win"] += 1
-            temp_map[_ct]["lose"] += 1
-            temp_map[ct]["country"].append(_ct)
-            temp_map[_ct]["country"].append(ct)
-
-            for _ct_ in country :
-                if not _ct_ == ct and not _ct_ in map[ct]["country"] :
-                    temp_map, temp_ct = play(temp_map, _ct_)
-
-                    save(temp_map)
-
-            # lose
-            temp_map = copy.deepcopy(map)
-            temp_map[ct]["lose"] += 1
-            temp_map[_ct]["win"] += 1
-            temp_map[ct]["country"].append(_ct)
-            temp_map[_ct]["country"].append(ct)
-
-            for _ct_ in country :
-                if not _ct_ == ct and not _ct_ in map[ct]["country"] :
-                    temp_map, temp_ct = play(temp_map, _ct_)
-
-                    save(temp_map)
-
-            # draw
-            temp_map = copy.deepcopy(map)
-            temp_map[ct]["draw"] += 1
-            temp_map[_ct]["draw"] += 1
-            temp_map[ct]["country"].append(_ct)
-            temp_map[_ct]["country"].append(ct)
-
-            for _ct_ in country :
-                if not _ct_ == ct and not _ct_ in map[ct]["country"] :
-                    temp_map, temp_ct = play(temp_map, _ct_)
-
-                    save(temp_map)
-
-    return map, ct
-
-def get(ct) :
-    final_result = []
-
-    for result_map in result :
-        for result_ct in result_map.keys() :
-            result_map[result_ct]["score"] = 3 * result_map[result_ct]["win"] + 1 * result_map[result_ct]["draw"]  
-
-        result_country = sorted(result_map.keys(), key=lambda _ct : result_map[_ct]["score"])
-
-        if result_country.index(ct) == 0 or result_country.index(ct) == 1 or (result_country.index(ct) == 2 and result_map[ct]["score"] == result_map[result_country[1]]["score"]) :
-            final_result.append(result_map) 
-
-    return final_result
-
-# play
-play(
-    copy.deepcopy(play_map),
-    target_country
-)
-
-# final_result = get(target_country)
-
-for final_map in result :
-    print_map(final_map)
+print(len(match), len(result), len(final))
     
-print(len(result))
