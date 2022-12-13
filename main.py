@@ -101,9 +101,9 @@ def print_map(map) :
 for result_map in result :
     result_cts = sorted(result_map.keys(), key=lambda x : result_map[x]["win"] * 3 + result_map[x]["draw"], reverse=True)
 
-    if result_cts[0] == target_country or result_cts[1] == target_country :
+    if result_cts[0] == target_country or result_cts[1] == target_country or (result_cts[2] == target_country and result_map[result_map[1]]["win"] * 3 + result_map[result_map[1]]["draw"] == result_map[target_country]["win"] * 3 + result_map[target_country]["draw"]) :
         final.append(result_map)
 
         print_map(result_map)
 
-print("All Match : {0} Hope Match : {1} Percentage : {2}".format(len(result), len(final), 100 * len(final) / len(result)))  
+print("All Match : {0} Hope Match : {1} Percentage : {2}".format(len(result), len(final), 100 * len(final) / len(result)))
