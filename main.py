@@ -106,5 +106,4 @@ for result_map in result :
 
         print_map(result_map)
 
-print(len(match), len(result), len(final))
-    
+print("All Match : {0} Hope Match : {1} Percentage : {2}".format(len(result), len(final), 100 * len(final) / len(result)))  
